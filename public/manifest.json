@@ -1,6 +1,6 @@
 {
   "short_name": "PWA",
-  "name": "Create React App PWA Sample",
+  "name": "React app PWA Sample",
   "icons": [
     {
       "src": "favicon.ico",
