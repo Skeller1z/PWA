@@ -9,6 +9,7 @@
 
 // To learn more about the benefits of this model and instructions on how to
 // opt-in, read https://cra.link/PWA
+import { Workbox } from "workbox-window";
 
 const isLocalhost = Boolean(
   window.location.hostname === "https://www.bsv-th-authorities.com/PWA"
@@ -28,6 +29,21 @@ export function register(config?: Config) {
       // from what our page is served on. This might happen if a CDN is used to
       // serve assets; see https://github.com/facebook/create-react-app/issues/2374
       return;
+    }
+
+    if ("serviceWorker" in navigator) {
+      const wb = new Workbox("sw.js");
+    
+      wb.addEventListener("installed", (event) => {
+        if (event.isUpdate) {
+          // eslint-disable-next-line no-restricted-globals
+          if (confirm("New app update is available, Click ok to refresh")) {
+            window.location.reload();
+          }
+        }
+      })
+    
+      wb.register();
     }
 
     window.addEventListener("load", () => {

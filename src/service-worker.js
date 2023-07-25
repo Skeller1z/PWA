@@ -4,9 +4,12 @@ import { clientsClaim } from "workbox-core";
 import { ExpirationPlugin } from "workbox-expiration";
 import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching";
 import { registerRoute } from "workbox-routing";
-import { StaleWhileRevalidate } from "workbox-strategies";
+import { CacheFirst, StaleWhileRevalidate } from "workbox-strategies";
+import { CacheableResponsePlugin } from 'workbox-cacheable-response'
 
 clientsClaim();
+
+self.skipWaiting();
 
 precacheAndRoute(self.__WB_MANIFEST);
 
@@ -40,6 +43,53 @@ registerRoute(
   })
 );
 
+registerRoute(
+  ({ url }) => url.origin === 'https://fonts.googleapis.com',
+  new StaleWhileRevalidate({
+      cacheName: 'google-fonts-stylesheets',
+  })
+);
+
+registerRoute(
+  ({ url }) => url.origin === 'https://fonts.gstatic.com',
+  new StaleWhileRevalidate({
+      cacheName: 'google-fonts-webfonts',
+      plugins: [
+          new CacheableResponsePlugin({
+              statuses: [0, 200],
+          }),
+          new ExpirationPlugin({
+              maxAgeSeconds: 60 * 60 * 24 * 365,
+              maxEntries: 30,
+          }),
+      ],
+  }),
+);
+
+registerRoute(
+  ({ request }) => request.destination === 'image',
+  new CacheFirst({
+      cacheName: 'images_cache',
+      plugins: [
+          new CacheableResponsePlugin({
+              statuses: [0, 200],
+          }),
+          new ExpirationPlugin({
+              maxEntries: 60,
+              maxAgeSeconds: 30 * 24 * 60 * 60,
+          }),
+      ],
+  })
+);
+
+// registerRoute(
+//   ({ request }) => request.destination === 'script' ||
+//       request.destination === 'style',
+//   new StaleWhileRevalidate({
+//       cacheName: 'static-resource',
+//   })
+// );
+
 self.addEventListener('install', (event) => {
   console.log('Service Worker installed.');
 });
@@ -58,37 +108,37 @@ self.addEventListener('message', (event) => {
 });
 
 
-self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
-});
+// self.addEventListener("message", (event) => {
+//   if (event.data && event.data.type === "SKIP_WAITING") {
+//     self.skipWaiting();
+//   }
+// });
 
-self.addEventListener("install", (event) => {
-  // The promise that skipWaiting() returns can be safely ignored.
-  self.skipWaiting();
+// self.addEventListener("install", (event) => {
+//   // The promise that skipWaiting() returns can be safely ignored.
+//   self.skipWaiting();
 
-  // Perform any other actions required for your
-  // service worker to install, potentially inside
-  // of event.waitUntil();
-});
+//   // Perform any other actions required for your
+//   // service worker to install, potentially inside
+//   // of event.waitUntil();
+// });
 
-self.addEventListener("activate", (event) => {
-  // eslint-disable-next-line no-undef
-  clients.claim();
-});
+// self.addEventListener("activate", (event) => {
+//   // eslint-disable-next-line no-undef
+//   clients.claim();
+// });
 
-self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.open("my-cache").then((cache) => {
-      return cache.match(event.request).then((response) => {
-        const fetchPromise = fetch(event.request).then((networkResponse) => {
-          cache.put(event.request, networkResponse.clone());
-          return networkResponse;
-        });
-        return response || fetchPromise;
-      });
-    })
-  );
-});
+// self.addEventListener("fetch", (event) => {
+//   event.respondWith(
+//     caches.open("my-cache").then((cache) => {
+//       return cache.match(event.request).then((response) => {
+//         const fetchPromise = fetch(event.request).then((networkResponse) => {
+//           cache.put(event.request, networkResponse.clone());
+//           return networkResponse;
+//         });
+//         return response || fetchPromise;
+//       });
+//     })
+//   );
+// });
 
