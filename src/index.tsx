@@ -22,11 +22,11 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('https://www.bsv-th-authorities.com/PWA/service-worker.js')
       .then(registration => {
         console.log('Service Worker registered:', registration);
-        window.parent.postMessage('Congrats! Register Successfully', '*');
+        window.parent.postMessage('Congrats! Register Successfully'+ registration);
       })
       .catch(error => {
         console.log('Service Worker registration failed:', error);
-        window.parent.postMessage("Register Failed", '*');
+        window.parent.postMessage("Register Failed" + error);
       });
   });
 }

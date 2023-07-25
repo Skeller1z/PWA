@@ -40,6 +40,24 @@ registerRoute(
   })
 );
 
+self.addEventListener('install', (event) => {
+  console.log('Service Worker installed.');
+});
+
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker activated.');
+});
+
+self.addEventListener('message', (event) => {
+  // ตรวจสอบเงื่อนไขที่คุณต้องการตรวจสอบใน Service Worker และส่งข้อมูลกลับไปยังหน้าเว็บ
+  if ('service-worker-condition-passed') {
+    event.source.postMessage('Congrats! Service Worker condition passed.', '*');
+  } else {
+    event.source.postMessage('Service Worker condition failed.', '*');
+  }
+});
+
+
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
